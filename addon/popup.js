@@ -152,27 +152,53 @@ function cacheRecentTabs(value) {
   localStorage.setItem("recentTabs", JSON.stringify(value));
 }
 
-function applyDarkTheme() {
-  document.body.style.background = "#4a4a4f";
-  document.body.style.color = "#fff";
-  document.querySelector("#panel").classList.add("dark-theme");
+function changeBodyStyle(isDark) {
+  if (isDark) {
+    document.body.style.background = "#4a4a4f";
+    document.body.style.color = "#fff";
+  } else {
+    document.body.style.background = undefined;
+    document.body.style.color = undefined;
+  }
 }
 
-async function checkForDark() {
-  browser.management.getAll().then((extensions) => {
-    for (let extension of extensions) {
-    // The user has the default dark theme enabled
-    if (extension.id ===
-      "firefox-compact-dark@mozilla.org@personas.mozilla.org"
-      && extension.enabled) {
-        applyDarkTheme();
-      }
-    }
-  });
+function applySystemTheme(classList, mediaQueryList) {
+  classList.add("system-theme");
+  changeBodyStyle(mediaQueryList.matches)
+  mediaQueryList.onchange = (e) => {
+    changeBodyStyle(e.matches)
+  };
+}
+
+function applyDarkTheme(classList) {
+  classList.add("dark-theme");
+  changeBodyStyle(true)
+}
+
+async function checkForDark(mediaQueryList) {
+  const classList = document.querySelector("#panel").classList;
+  const extensions = await browser.management.getAll();
+  const enabledExts = extensions.map(ext => ext.enabled ? ext.id : undefined).filter(e => e != null);
+  mediaQueryList.onchange = undefined;
+  classList.remove("system-theme");
+  classList.remove("dark-theme");
+  document.body.style.background = undefined;
+  document.body.style.color = undefined;
+  // The user has the default dark theme enabled
+  if (enabledExts.includes("firefox-compact-dark@mozilla.org")) {
+    applyDarkTheme(classList);
+    return;
+  }
+  // The user has the default theme enabled
+  if (enabledExts.includes("default-theme@mozilla.org")) {
+    applySystemTheme(classList, mediaQueryList);
+    return;
+  }
 }
 
 async function init() {
   document.addEventListener("contextmenu", event => event.preventDefault());
+  const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
 
   browser.runtime.onMessage.addListener((message) => {
     if (message.type === "updateRecentTabs") {
@@ -206,7 +232,10 @@ async function init() {
   for (let eventName of rerenderEvents) {
     browser.tabs[eventName].addListener(updateHome);
   }
-  checkForDark();
+  checkForDark(mediaQueryList);
+  browser.management.onEnabled.addListener((info) => {
+    checkForDark(mediaQueryList);
+  });
 }
 
 init();
