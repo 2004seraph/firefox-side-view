@@ -178,7 +178,7 @@ function applyDarkTheme(classList) {
 async function checkForDark(mediaQueryList) {
   const classList = document.querySelector("#panel").classList;
   const extensions = await browser.management.getAll();
-  const enabledExts = extensions.map(ext => ext.enabled ? ext.id : undefined).filter(e => e != null);
+  const enabledExts = extensions.map(ext => ext.enabled ? ext.id : undefined);
   mediaQueryList.onchange = undefined;
   classList.remove("system-theme");
   classList.remove("dark-theme");
@@ -192,7 +192,6 @@ async function checkForDark(mediaQueryList) {
   // The user has the default theme enabled
   if (enabledExts.includes("default-theme@mozilla.org")) {
     applySystemTheme(classList, mediaQueryList);
-    return;
   }
 }
 
