@@ -4,21 +4,29 @@ function element(selector) {
   return document.querySelector(selector);
 }
 
-function applyDarkTheme() {
-  document.querySelector(".page").classList.add("dark-theme");
+function applySystemTheme(classList) {
+  classList.add("system-theme");
+}
+
+function applyDarkTheme(classList) {
+  classList.add("dark-theme");
 }
 
 async function checkForDark() {
-  browser.management.getAll().then((extensions) => {
-    for (let extension of extensions) {
-    // The user has the default dark theme enabled
-    if (extension.id ===
-      "firefox-compact-dark@mozilla.org@personas.mozilla.org"
-      && extension.enabled) {
-        applyDarkTheme();
-      }
-    }
-  });
+  const classList = document.querySelector(".page").classList;
+  const extensions = await browser.management.getAll();
+  const enabledExts = extensions.map(ext => ext.enabled ? ext.id : undefined);
+  classList.remove("system-theme");
+  classList.remove("dark-theme");
+  // The user has the default dark theme enabled
+  if (enabledExts.includes("firefox-compact-dark@mozilla.org")) {
+    applyDarkTheme(classList);
+    return;
+  }
+  // The user has the default theme enabled
+  if (enabledExts.includes("default-theme@mozilla.org")) {
+    applySystemTheme(classList);
+  }
 }
 
 async function init() {
