@@ -1,4 +1,6 @@
-# Side View
+Patches from later commits in the original source, combined with those from the forked repo.
+
+# Side View 2
 
 An experiment with opening mobile views of pages in the sidebar.
 
