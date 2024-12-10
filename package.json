@@ -1,5 +1,6 @@
 {
   "name": "side-view",
+  "packageManager": "pnpm@9.15.0",
   "description": "Open a mobile view of a page in the sidebar",
   "version": "0.6.0",
   "author": "Mozilla (https://mozilla.org/)",
